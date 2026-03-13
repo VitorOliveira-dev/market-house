@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -208,6 +208,53 @@ export default function CategoriesScreen() {
     );
   }
 
+  const renderHeader = () => {
+    if (!isAdding) return null;
+    
+    return (
+      <Card style={[styles.card, styles.addCard]}>
+        <Text style={[styles.addTitle, { color: colors.text }]}>Nova Categoria</Text>
+        <Input
+          label="Nome"
+          value={name}
+          onChangeText={setName}
+          placeholder="Ex: Laticínios"
+        />
+        <Input
+          label="Descrição (opcional)"
+          value={description}
+          onChangeText={setDescription}
+          placeholder="Ex: Leite, queijo, iogurte..."
+          style={styles.input}
+        />
+        <ColorPicker
+          label="Cor da Categoria"
+          selectedColor={selectedColor}
+          onColorSelect={setSelectedColor}
+        />
+        <UnitSelector
+          label="Unidades permitidas para itens desta categoria"
+          selectedUnits={selectedUnits}
+          onUnitsChange={setSelectedUnits}
+        />
+        <View style={styles.actions}>
+          <Button
+            title="Cancelar"
+            onPress={handleCancel}
+            variant="outline"
+            style={styles.button}
+          />
+          <Button
+            title="Criar"
+            onPress={handleSave}
+            loading={createMutation.isPending}
+            style={styles.button}
+          />
+        </View>
+      </Card>
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <View style={styles.header}>
@@ -219,54 +266,12 @@ export default function CategoriesScreen() {
         />
       </View>
 
-      {isAdding && (
-        <Card style={[styles.card, styles.addCard]}>
-          <Text style={[styles.addTitle, { color: colors.text }]}>Nova Categoria</Text>
-          <Input
-            label="Nome"
-            value={name}
-            onChangeText={setName}
-            placeholder="Ex: Laticínios"
-          />
-          <Input
-            label="Descrição (opcional)"
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Ex: Leite, queijo, iogurte..."
-            style={styles.input}
-          />
-          <ColorPicker
-            label="Cor da Categoria"
-            selectedColor={selectedColor}
-            onColorSelect={setSelectedColor}
-          />
-          <UnitSelector
-            label="Unidades permitidas para itens desta categoria"
-            selectedUnits={selectedUnits}
-            onUnitsChange={setSelectedUnits}
-          />
-          <View style={styles.actions}>
-            <Button
-              title="Cancelar"
-              onPress={handleCancel}
-              variant="outline"
-              style={styles.button}
-            />
-            <Button
-              title="Criar"
-              onPress={handleSave}
-              loading={createMutation.isPending}
-              style={styles.button}
-            />
-          </View>
-        </Card>
-      )}
-
       <FlatList
         data={categories}
         renderItem={renderCategory}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={renderHeader}
         ListEmptyComponent={
           <EmptyState
             icon="folder-open-outline"
@@ -302,7 +307,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   addCard: {
-    marginHorizontal: 16,
     marginBottom: 16,
   },
   addTitle: {

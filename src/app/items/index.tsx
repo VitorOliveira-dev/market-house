@@ -262,6 +262,85 @@ export default function ItemsScreen() {
     );
   }
 
+  const renderHeader = () => {
+    if (!isAdding) return null;
+    
+    return (
+      <Card style={[styles.card, styles.addCard]}>
+        <Text style={[styles.addTitle, { color: colors.text }]}>Novo Item</Text>
+        <Input
+          label="Nome"
+          value={name}
+          onChangeText={setName}
+          placeholder="Ex: Leite Integral"
+        />
+        <Input
+          label="Código de Barras (opcional)"
+          value={barcode}
+          onChangeText={setBarcode}
+          placeholder="Ex: 7891234567890"
+          keyboardType="numeric"
+          style={styles.input}
+        />
+        <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
+        <View style={styles.categoryPicker}>
+          {categories?.map((cat) => (
+            <Button
+              key={cat.id}
+              title={cat.name}
+              onPress={() => selectCategory(cat.id)}
+              variant={categoryId === cat.id ? 'primary' : 'outline'}
+              style={[
+                styles.categoryButton,
+                categoryId !== cat.id && { 
+                  borderColor: cat.color || CATEGORY_COLORS[0].value,
+                  borderWidth: 2,
+                },
+              ]}
+            />
+          ))}
+        </View>
+        {availableUnits.length > 0 && (
+          <>
+            <Text style={[styles.label, { color: colors.text }]}>Unidades disponíveis nesta categoria</Text>
+            <View style={styles.unitDisplay}>
+              {availableUnits.map((unit) => (
+                <View
+                  key={unit}
+                  style={[
+                    styles.unitBadge,
+                    { backgroundColor: colors.card, borderColor: colors.cardBorder },
+                  ]}
+                >
+                  <Text style={[styles.unitBadgeText, { color: colors.textSecondary }]}>
+                    {getUnitLabel(unit)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+              A unidade será definida ao adicionar o item à lista de compras
+            </Text>
+          </>
+        )}
+        <View style={styles.actions}>
+          <Button
+            title="Cancelar"
+            onPress={handleCancel}
+            variant="outline"
+            style={styles.button}
+          />
+          <Button
+            title="Criar"
+            onPress={handleSave}
+            loading={createMutation.isPending}
+            style={styles.button}
+          />
+        </View>
+      </Card>
+    );
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['bottom']}>
       <View style={styles.header}>
@@ -273,86 +352,12 @@ export default function ItemsScreen() {
         />
       </View>
 
-      {isAdding && (
-        <Card style={[styles.card, styles.addCard]}>
-          <Text style={[styles.addTitle, { color: colors.text }]}>Novo Item</Text>
-          <Input
-            label="Nome"
-            value={name}
-            onChangeText={setName}
-            placeholder="Ex: Leite Integral"
-          />
-          <Input
-            label="Código de Barras (opcional)"
-            value={barcode}
-            onChangeText={setBarcode}
-            placeholder="Ex: 7891234567890"
-            keyboardType="numeric"
-            style={styles.input}
-          />
-          <Text style={[styles.label, { color: colors.text }]}>Categoria</Text>
-          <View style={styles.categoryPicker}>
-            {categories?.map((cat) => (
-              <Button
-                key={cat.id}
-                title={cat.name}
-                onPress={() => selectCategory(cat.id)}
-                variant={categoryId === cat.id ? 'primary' : 'outline'}
-                style={[
-                  styles.categoryButton,
-                  categoryId !== cat.id && { 
-                    borderColor: cat.color || CATEGORY_COLORS[0].value,
-                    borderWidth: 2,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-          {availableUnits.length > 0 && (
-            <>
-              <Text style={[styles.label, { color: colors.text }]}>Unidades disponíveis nesta categoria</Text>
-              <View style={styles.unitDisplay}>
-                {availableUnits.map((unit) => (
-                  <View
-                    key={unit}
-                    style={[
-                      styles.unitBadge,
-                      { backgroundColor: colors.card, borderColor: colors.cardBorder },
-                    ]}
-                  >
-                    <Text style={[styles.unitBadgeText, { color: colors.textSecondary }]}>
-                      {getUnitLabel(unit)}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-              <Text style={[styles.hint, { color: colors.textSecondary }]}>
-                A unidade será definida ao adicionar o item à lista de compras
-              </Text>
-            </>
-          )}
-          <View style={styles.actions}>
-            <Button
-              title="Cancelar"
-              onPress={handleCancel}
-              variant="outline"
-              style={styles.button}
-            />
-            <Button
-              title="Criar"
-              onPress={handleSave}
-              loading={createMutation.isPending}
-              style={styles.button}
-            />
-          </View>
-        </Card>
-      )}
-
       <FlatList
         data={items}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={renderHeader}
         ListEmptyComponent={
           <EmptyState
             icon="cube-outline"
@@ -388,7 +393,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   addCard: {
-    marginHorizontal: 16,
     marginBottom: 16,
   },
   addTitle: {
